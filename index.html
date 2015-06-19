@@ -1,0 +1,105 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
+	<head>
+		<title>WC</title>
+		<link rel="icon" type="image/png" href="/wc/webcam.png" />
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<script type="text/javascript" >
+			//<![CDATA[
+				var imgs = [];
+				var pos = 0;
+				function refresh(){
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function(){
+						if(xmlhttp.status==200 && xmlhttp.readyState==4){    
+							lines = xmlhttp.responseText.split('\n');
+							imgs = [];	
+							for (var i = 0; i < lines.length; i++) {
+								pos = lines[i].indexOf("Capture_");
+								if(pos > -1){
+									url =  lines[i].substring(pos,  pos + 25);
+									imgs.push(url);
+								}
+							}
+							displayIMG(0);
+						}
+					}
+					xmlhttp.open("GET","/wc/img/?C=M;O=D",true);
+					xmlhttp.send();
+				}
+				function displayIMG(i){
+					url = 'img/' + imgs[i];
+					document.getElementById("capture").src = url;
+					pos = i;
+				}
+				function next(){
+					displayIMG(Math.min(pos + 1, imgs.length));
+				}
+				function prev(){
+					displayIMG(Math.max(0, pos -1));
+				}
+				document.onkeydown=function(e){
+					if(e.which == 78 || e.which == 39) {
+						 next();
+					}
+					if(e.which == 80 || e.which == 37) {
+						 prev();
+					}
+					if(e.which == 32) {
+						refresh();
+					}
+				}
+
+				window.addEventListener('load', function(){
+	 
+					var startx = 0;
+					var starty = 0;
+					var distmin = 200;
+	 
+					document.addEventListener('touchstart', function(e){
+						var touchobj = e.changedTouches[0];
+						startx = parseInt(touchobj.clientX);
+						starty = parseInt(touchobj.clientY);
+						e.preventDefault();
+					}, false);
+	 
+						document.addEventListener('touchend', function(e){
+						var touchobj = e.changedTouches[0];
+						var hdist = Math.abs(touchobj.clientY - starty);
+						var vdist = touchobj.clientX - startx;
+						if(hdist > Math.abs(vdist)){
+							if (hdist > distmin){
+								refresh();
+							}
+						} else if (Math.abs(vdist) > distmin) {
+							if( vdist > 0 ){
+								prev();
+							}else{
+								next();
+							}
+						}
+						e.preventDefault()
+					}, false);
+	 
+				}, false);
+
+				refresh();
+			//]]>
+		</script>
+		<style type="text/css">
+			body, div {
+				text-align:center;
+				margin-left:auto;
+				margin-right:auto;
+				background-color:#000
+			}
+			img{
+				border:1px solid #000;
+				max-width:100%;
+				max-height:100%;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="content" style="width:90%;height:90%; "><img id="capture" alt="capture" src="/wc/webcam.png" /></div>
+	</body>
+</html>

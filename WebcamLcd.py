@@ -3,6 +3,7 @@ import math
 import time
 import threading
 import os
+import datetime as dt
 
 import picamera
 import Adafruit_CharLCD as LCD
@@ -97,8 +98,11 @@ def cameraCapture(path):
 		camera.resolution = capture_resolution
 		#camera.vflip = True
 		#camera.hflip = True
+		camera.annotate_background = picamera.Color('black')
+		camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		camera.annotate_text_size = 16
 		camera.start_preview()
-		time.sleep(2)
+		time.sleep(5)
 		camera.capture(path)
 
 def clean():
