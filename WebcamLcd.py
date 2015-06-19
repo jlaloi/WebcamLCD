@@ -8,10 +8,10 @@ import picamera
 import Adafruit_CharLCD as LCD
 
 # Parameter
-capture_delay = 60
+capture_delay = 30
 capture_resolution = (1920, 1080)
 capture_directory = '/var/www/wc/img/'
-capture_purge_hour = 12
+capture_purge_hour = 24
 
 # Initialize the LCD
 lcd = LCD.Adafruit_CharLCDPlate()
@@ -20,13 +20,13 @@ lcd.set_color(0.0, 0.0, 0.0)
 
 # Misc var
 stop = False
+pause = False
 lastCaptureDate = time.localtime()
 lastCaptureSize = 0
 
 class KeyListener(threading.Thread):
 	def run(self):
-		global stop
-		global capture_delay
+		global stop, capture_delay, pause
 		while not stop: 
 			if lcd.is_pressed(LCD.SELECT):
 				self.stop()
@@ -40,7 +40,12 @@ class KeyListener(threading.Thread):
 			if lcd.is_pressed(LCD.LEFT):
 				capture()
 			if lcd.is_pressed(LCD.RIGHT):
-				capture()
+				pause = not pause
+				if pause:
+					lcd.set_color(0.0, 0.0, 1.0)
+				else:
+					lcd.set_color(0.0, 0.0, 0.0)
+				display()
 			time.sleep(0.2) 
 	def stop(self):
 		global stop
@@ -48,15 +53,14 @@ class KeyListener(threading.Thread):
 
 class CaptureThread(threading.Thread):
 	def run(self):
-		global stop
-		global capture_delay
+		global stop, capture_delay, pause
 		i = 0
 		while not stop:
 			if i >= capture_delay:
 				capture()
 				clean()
 				i = 0
-			else:
+			elif not pause:
 				i += 1
 			time.sleep(1)
 
@@ -70,11 +74,11 @@ def displayText(text):
 	lcd.message(text)
 
 def display():
-	displayText("D:" + str(capture_delay) + "s S:" + str(lastCaptureSize) + "M\nL:" + time.strftime('%d/%m %H:%M:%S', lastCaptureDate))
+	global pause
+	displayText("D:" + str(capture_delay) + "s S:" + str(lastCaptureSize) + "M P:" + str(pause) + "\nL:" + time.strftime('%d/%m %H:%M:%S', lastCaptureDate))
 
 def capture():
-	global lastCaptureDate
-	global lastCaptureSize
+	global lastCaptureDate, lastCaptureSize, pause
 	lcd.set_color(1.0, 0.0, 0.0)
 	lastCaptureDate = time.localtime()
 	fileName = "Capture_" + time.strftime('%y%m%d_%H%M%S', lastCaptureDate) + ".jpg"
@@ -82,14 +86,17 @@ def capture():
 	cameraCapture(fullPath)
 	lastCaptureSize = round(os.path.getsize(fullPath) / 1048576.0, 1)
 	display()
-	lcd.set_color(0.0, 0.0, 0.0)
+	if pause:
+		lcd.set_color(0.0, 0.0, 1.0)
+	else:
+		lcd.set_color(0.0, 0.0, 0.0)
 
 def cameraCapture(path):
 	with picamera.PiCamera() as camera:
 		#camera.resolution = (2592, 1944)
 		camera.resolution = capture_resolution
-		camera.vflip = True
-		camera.hflip = True
+		#camera.vflip = True
+		#camera.hflip = True
 		camera.start_preview()
 		time.sleep(2)
 		camera.capture(path)
