@@ -9,7 +9,7 @@ import Adafruit_CharLCD as LCD
 
 # Parameter
 capture_delay = 30
-capture_resolution = (1920, 1080)
+capture_resolution = (960, 720)
 capture_directory = '/var/www/wc/img/'
 capture_purge_hour = 24
 
