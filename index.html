@@ -39,10 +39,10 @@
 				}
 				document.onkeydown=function(e){
 					if(e.which == 78 || e.which == 39) {
-						 next();
+						prev();
 					}
 					if(e.which == 80 || e.which == 37) {
-						 prev();
+						 next();
 					}
 					if(e.which == 32) {
 						refresh();
@@ -53,7 +53,7 @@
 	 
 					var startx = 0;
 					var starty = 0;
-					var distmin = 200;
+					var distmin = 100;
 	 
 					document.addEventListener('touchstart', function(e){
 						var touchobj = e.changedTouches[0];
@@ -100,6 +100,6 @@
 		</style>
 	</head>
 	<body>
-		<div id="content" style="width:90%;height:90%; "><img id="capture" alt="capture" src="/wc/webcam.png" /></div>
+		<div id="content" style="width:90%;height:90%; "><img id="capture" alt="capture" /></div>
 	</body>
 </html>
